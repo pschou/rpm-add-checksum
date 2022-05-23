@@ -8,6 +8,4 @@ rpm-add-sha256,  Version: 0.1.20220523.1524 (https://github.com/pschou/rpm-add-s
 
 Usage: ./rpm-add-sha256 input.rpm output.rpm
 
-  -nhdr int
-        Number of headers (default 2)
 ```

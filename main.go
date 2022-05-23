@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2022 pschou (https://github.com/pschou)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// [START functions_helloworld_get]
-
-// Package helloworld provides a set of Cloud Functions samples.
 package main
 
 import (
@@ -44,8 +41,6 @@ func main() {
 	log.SetFlags(0)
 	log.SetPrefix("rpm-add-sha256: ")
 
-	nhdr := flag.Int("nhdr", 2, "Number of headers")
-
 	flag.Parse()
 
 	if flag.NArg() != 2 {
@@ -66,9 +61,6 @@ func main() {
 	if lead, err = r.Lead(); err != nil {
 		log.Fatal(err)
 	}
-	if *nhdr < 1 {
-		os.Exit(0)
-	}
 
 	//ln, _ := lead.Name.MarshalJSON()
 	//fmt.Println("Found", string(ln))
@@ -80,7 +72,7 @@ func main() {
 		//found_file_dgst    bool
 	)
 
-	for i := 0; i < *nhdr; i++ {
+	for i := 0; i < 2; i++ {
 		hdr, err = r.Next()
 		if err != nil {
 			break
