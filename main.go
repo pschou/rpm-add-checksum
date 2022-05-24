@@ -16,8 +16,10 @@ package main
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
+	b64 "encoding/base64"
 	"encoding/hex"
 	"errors"
 	"flag"
@@ -94,7 +96,6 @@ func main() {
 		hdrs = append(hdrs, hdr)
 	}
 
-	offset, err := fi.Seek(0, io.SeekCurrent)
 	if err != nil {
 		log.Fatal("unable to determine current offset")
 	}
@@ -104,6 +105,7 @@ func main() {
 	h_sha256 := sha256.New()
 	hashes := io.MultiWriter(h_sha1, h_sha256)
 
+	offset, err := fi.Seek(0, io.SeekCurrent)
 	var pkgSize int64
 	if pkgSize, err = io.Copy(hashes, fi); err != nil {
 		fmt.Println("err to hash")
@@ -115,15 +117,20 @@ func main() {
 
 	//if !found_payload_dgst && found_file_dgst {
 	//}
+	fmt.Println("Payload header:")
 	payloadHdr := rpm.NewPayloadHeader()
 	for _, tag := range hdrs[1].Tags {
 		switch tag.Tag {
-		case rpm.RPMTAG_PAYLOADDIGESTALGO, rpm.RPMTAG_PAYLOADDIGEST:
+		case rpm.RPMTAG_PAYLOADDIGESTALGO:
+		case rpm.RPMTAG_PAYLOADDIGEST:
+			d, _ := tag.StringData()
+			fmt.Println("  Removing", d)
 		default:
 			payloadHdr.Add(tag)
 		}
 	}
 	payloadHdr.AddStringArray(rpm.RPMTAG_PAYLOADDIGEST, hex.EncodeToString(h_sha256.Sum(nil)))
+	fmt.Println("  adding", hex.EncodeToString(h_sha256.Sum(nil)))
 	payloadHdr.AddInt32(rpm.RPMTAG_PAYLOADDIGESTALGO, rpm.PGPHASHALGO_SHA256)
 	//fmt.Println("adding payload digest to header:", hex.EncodeToString(h_sha256.Sum(nil)))
 	//ln, _ := hdr.MarshalJSON()
@@ -138,13 +145,19 @@ func main() {
 	headers := bytes.NewBufferString("")
 	header_sha1 := sha1.New()
 	header_sha256 := sha256.New()
-	header_writer := io.MultiWriter(headers, header_sha1, header_sha256)
+	header_md5 := md5.New()
+	header_writer := io.MultiWriter(headers, header_sha1, header_sha256, header_md5)
 	var payloadHdrSize int64
 	if payloadHdrSize, err = rpm.WriteHeaders(header_writer, payloadHdr); err != nil {
 		log.Fatal(err)
 	}
+
+	fi.Seek(offset, io.SeekStart)
+	io.Copy(header_md5, fi)
+
 	fmt.Println("  sha1:", hex.EncodeToString(header_sha1.Sum(nil)))
 	fmt.Println("  sha256:", hex.EncodeToString(header_sha256.Sum(nil)))
+	fmt.Println("  md5:", b64.URLEncoding.EncodeToString(header_md5.Sum(nil)))
 
 	fmt.Println("Signature headers:")
 	// Look to see is SHA256 is already declared
@@ -152,7 +165,7 @@ func main() {
 	var has_header_sha256 bool
 	for _, tag := range Tags {
 		if tag.Tag == rpm.RPMTAG_SHA256HEADER {
-			fmt.Println("found sha256 in header")
+			fmt.Println("  found sha256 in header")
 			has_header_sha256 = true
 		}
 	}
@@ -187,10 +200,16 @@ func main() {
 	newHdr = rpm.NewSignatureHeader()
 	for _, tag := range Tags {
 		switch tag.Tag {
+		case rpm.RPMSIGTAG_PGP, rpm.RPMTAG_RSAHEADER:
+			fmt.Println("  removing:", tag)
 		case rpm.RPMSIGTAG_SIZE:
 			d, _ := tag.Int32()
-			fmt.Println("Updated size, prev:", d, "now", uint32(payloadHdrSize+pkgSize), "=", signatureHdrSize, payloadHdrSize, pkgSize)
+			fmt.Println("  Updated size, prev:", d, "now", uint32(payloadHdrSize+pkgSize), "=", signatureHdrSize, payloadHdrSize, pkgSize)
 			newHdr.AddInt32(rpm.RPMSIGTAG_SIZE, uint32(payloadHdrSize+pkgSize))
+		case rpm.RPMSIGTAG_MD5:
+			d, _ := tag.Bytes()
+			fmt.Println("  Updated md5, prev:", b64.URLEncoding.EncodeToString(d), "now", b64.URLEncoding.EncodeToString(header_md5.Sum(nil)))
+			newHdr.AddBin(rpm.RPMSIGTAG_MD5, header_md5.Sum(nil))
 		default:
 			newHdr.Add(tag)
 		}
