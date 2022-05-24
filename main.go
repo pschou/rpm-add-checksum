@@ -42,10 +42,12 @@ func main() {
 
 	log.SetFlags(0)
 	log.SetPrefix("rpm-add-sha256: ")
+	test := flag.Bool("test", false, "Test if SHA256 is present in input file")
 
 	flag.Parse()
 
-	if flag.NArg() != 2 {
+	if *test && flag.NArg() >= 1 {
+	} else if flag.NArg() != 2 {
 		fmt.Println("Input and Output file needed")
 		os.Exit(1)
 	}
@@ -68,10 +70,10 @@ func main() {
 	//fmt.Println("Found", string(ln))
 
 	var (
-		hdr  *rpm.Header
-		hdrs []*rpm.Header
-		//found_payload_dgst bool
-		//found_file_dgst    bool
+		hdr             *rpm.Header
+		hdrs            []*rpm.Header
+		found_file_dgst bool
+		file_dgst_algo  []uint32
 	)
 
 	for i := 0; i < 2; i++ {
@@ -82,18 +84,33 @@ func main() {
 		//ln, _ := hdr.MarshalJSON()
 		//fmt.Println("HDR Found", string(ln))
 		//fmt.Println("")
-		/*
-			for _, t := range hdr.Tags {
-				fmt.Println("tag", t)
-				if t.Tag == rpm.RPMTAG_PAYLOADDIGEST {
-					found_payload_dgst = true
-				}
-				if t.Tag == rpm.RPMTAG_FILEDIGESTALGO {
-					found_file_dgst = true
-				}
-			}*/
+		for _, t := range hdr.Tags {
+			if t.Tag == rpm.RPMTAG_FILEDIGESTALGO {
+				found_file_dgst = true
+				file_dgst_algo, _ = t.Int32()
+				fmt.Printf("tag: %#v\n", t)
+			}
+		}
 		//fmt.Printf("Writing header: %#v\n", hdr)
 		hdrs = append(hdrs, hdr)
+	}
+
+	if *test {
+		if found_file_dgst {
+			algo := ""
+			switch file_dgst_algo[0] {
+			case rpm.PGPHASHALGO_MD5:
+				algo = "MD5"
+			case rpm.PGPHASHALGO_SHA1:
+				algo = "SHA1"
+			case rpm.PGPHASHALGO_SHA256:
+				algo = "SHA256"
+			}
+			fmt.Println("Found Digest", algo)
+			os.Exit(0)
+		}
+		fmt.Println("No Digest Found")
+		os.Exit(1)
 	}
 
 	if err != nil {
