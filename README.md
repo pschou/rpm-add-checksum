@@ -1,4 +1,4 @@
-# RPM Add SHA256
+# RPM Add Checksum
 
 A very basic tool to compute and surgically add SHA256 hashes to the header of
 an rpm files to enable FIPS compatibility.  No other bytes in the rpm file are
