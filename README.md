@@ -11,10 +11,10 @@ tampered with.  Adding a checksum with this tool adds this confidence-- act
 wisely as with great power comes great responsibility.
 
 ```bash
-$ ./rpm-add-sha256 -h
-rpm-add-sha256,  Version: 0.1.20220526.2240 (https://github.com/pschou/rpm-add-sha256)
+$ ./rpm-add-checksum -h
+rpm-add-checksum,  Version: 0.1.20220526.2240 (https://github.com/pschou/rpm-add-checksum)
 
-Usage: rpm-add-sha256 [options] input.rpm output.rpm
+Usage: rpm-add-checksum [options] input.rpm output.rpm
 
   -f    Force new file to be written, even if checksum fails
   -i    Do upgrade of file hashes in place
@@ -26,7 +26,7 @@ Usage: rpm-add-sha256 [options] input.rpm output.rpm
 
 Adding a sha256 header to a file:
 ```bash
-$ ./rpm-add-sha256 -v -i hello.rpm
+$ ./rpm-add-checksum -v -i hello.rpm
 reading package to hash
 Finished hashing package:
   f5a36aea3bfdf2206eb8babfc42b1f42606db7c9
@@ -45,15 +45,15 @@ Signature headers:
   Updated md5, prev: vA7he-bCNai-4zosehFhQg== now _XiGKKOepeIaKm5GNHjUrQ==
 ```
 
-File already had sha256 header:
+File already has sha256 header:
 ```bash
-$ ./rpm-add-sha256 -v -i hello.rpm
+$ ./rpm-add-checksum -v -i hello.rpm
 Found Digest SHA256
 ```
 
-When the internal checksum fails, the sha256 upgrade is not added:
+When the internal checksum fails, the sha256 header upgrade is not done:
 ```bash
-$ ./rpm-add-sha256 -v -i  hello.rpm
+$ ./rpm-add-checksum -v -i  hello.rpm
 reading package to hash
 Finished hashing package:
   c19346950f20d5051373982115daf833aa2a993c

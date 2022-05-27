@@ -1,4 +1,4 @@
-PROG_NAME := "rpm-add-sha256"
+PROG_NAME := "rpm-add-checksum"
 VERSION = 0.1.$(shell date +%Y%m%d.%H%M)
 FLAGS := "-s -w -X main.version=${VERSION}"
 
