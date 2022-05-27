@@ -38,13 +38,13 @@ var version string
 func main() {
 	flag.Usage = func() {
 		_, f := path.Split(os.Args[0])
-		fmt.Fprintf(os.Stderr, "rpm-add-sha256,  Version: %s (https://github.com/pschou/rpm-add-sha256)\n\n"+
+		fmt.Fprintf(os.Stderr, "rpm-add-checksum,  Version: %s (https://github.com/pschou/rpm-add-checksum)\n\n"+
 			"Usage: %s [options] input.rpm output.rpm\n\n", version, f)
 		flag.PrintDefaults()
 	}
 
 	log.SetFlags(0)
-	log.SetPrefix("rpm-add-sha256: ")
+	log.SetPrefix("rpm-add-checksum: ")
 	test := flag.Bool("t", false, "Test if SHA256 is present in input file")
 	force := flag.Bool("f", false, "Force new file to be written, even if checksum fails")
 	inplace := flag.Bool("i", false, "Do upgrade of file hashes in place")
