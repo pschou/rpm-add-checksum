@@ -1,14 +1,15 @@
 # RPM Add Checksum
 
-A very basic tool to compute and surgically add SHA256 hashes to the header of
-an rpm files to enable FIPS compatibility.  No other bytes in the rpm file are
-changed so the updated and original RPM function exactly the same.  While this
-tool enhances the digest / checksums inside an existing RPM file, it should
-only be used when a chain of custody can be verified out-of-band as the intent
-of enabling FIPS on a system is to ensure that a higher level of digest checks
+A fundamental tool to compute and surgically add SHA256 hashes to the header of
+an rpm file to enable FIPS compatibility.  No other bytes in the rpm file are
+changed, so the updated and original RPM functions are exactly the same. 
+
+While this tool enhances the digest/checksums inside an existing RPM file, it
+should only be used when a chain of custody can be verified out-of-band.  The
+intent of enabling FIPS is to ensure that a higher standard of digest checks
 are done and thus a higher level of confidence that the files have not been
-tampered with.  Adding a checksum with this tool adds this confidence-- act
-wisely as with great power comes great responsibility.
+tampered.  Adding a checksum with this tool adds this confidence-- act wisely
+as with great power comes great responsibility.
 
 ```bash
 $ ./rpm-add-checksum -h
