@@ -57,17 +57,17 @@ func main() {
 	if *test {
 		// Test only
 		if flag.NArg() != 1 {
-			fmt.Println("Input file to test needed")
+			fmt.Println("One input file argument required")
 			os.Exit(1)
 		}
 	} else if *inplace {
 		if flag.NArg() != 1 {
-			fmt.Println("Input file to upgrade needed")
+			fmt.Println("One input file argument required")
 			os.Exit(1)
 		}
 		outFile = flag.Arg(0) + ".inplace"
 	} else if flag.NArg() != 2 {
-		fmt.Println("Input and Output file needed")
+		fmt.Println("Input and Output file required")
 		os.Exit(1)
 	} else {
 		outFile = flag.Arg(1)
@@ -134,10 +134,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err != nil {
-		log.Fatal("unable to determine current offset")
-	}
-
 	if *verbose {
 		fmt.Println("reading package to hash")
 	}
@@ -146,6 +142,10 @@ func main() {
 	hashes := io.MultiWriter(h_sha1, h_sha256)
 
 	offset, err := fi.Seek(0, io.SeekCurrent)
+	if err != nil {
+		log.Fatal("unable to determine current offset")
+	}
+
 	var pkgSize int64
 	if pkgSize, err = io.Copy(hashes, fi); err != nil {
 		fmt.Println("err to hash")
